@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ProPresupuesto Móvil</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#243B55">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background: #243B55;
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Vista móvil */
+        .mobile-container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: #f5f7fa;
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        /* Header fijo */
+        .app-header {
+            background: linear-gradient(135deg, #243B55, #141E30);
+            color: white;
+            padding: 20px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .app-subtitle {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        /* Stats cards */
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            padding: 16px;
+            background: white;
+            margin: 16px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .stat-card-mobile {
+            text-align: center;
+        }
+
+        .stat-value-mobile {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #243B55;
+            line-height: 1.2;
+        }
+
+        .stat-label-mobile {
+            font-size: 0.7rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Tabs móviles */
+        .mobile-tabs {
+            display: flex;
+            margin: 0 16px 16px;
+            background: white;
+            border-radius: 50px;
+            padding: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .mobile-tab {
+            flex: 1;
+            padding: 12px 0;
+            text-align: center;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            border: none;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .mobile-tab.labor.active {
+            background: #1976d2;
+            color: white;
+        }
+
+        .mobile-tab.material.active {
+            background: #f57c00;
+            color: white;
+        }
+
+        /* Formularios móviles */
+        .form-section {
+            background: white;
+            margin: 16px;
+            padding: 20px;
+            border-radius: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .form-title {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .mobile-form-group {
+            margin-bottom: 16px;
+        }
+
+        .mobile-form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #555;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .mobile-form-group select,
+        .mobile-form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 16px;
+            font-size: 1rem;
+            background: #fafafa;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .mobile-add-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+            transition: all 0.3s;
+            color: white;
+        }
+
+        .mobile-add-btn.labor {
+            background: #1976d2;
+        }
+
+        .mobile-add-btn.material {
+            background: #f57c00;
+        }
+
+        .mobile-add-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Lista de items */
+        .items-section {
+            background: white;
+            margin: 16px;
+            padding: 20px;
+            border-radius: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .items-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .items-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .clear-btn {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .mobile-item-card {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            position: relative;
+            border-left: 6px solid;
+        }
+
+        .mobile-item-card.labor {
+            border-left-color: #1976d2;
+        }
+
+        .mobile-item-card.material {
+            border-left-color: #f57c00;
+        }
+
+        .mobile-item-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .mobile-item-category {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+
+        .category-labor {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .category-material {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .mobile-item-delete {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            color: #999;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-item-description {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+        }
+
+        .mobile-item-details {
+            display: flex;
+            gap: 12px;
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .mobile-item-price {
+            font-weight: 700;
+            color: #2e7d32;
+            font-size: 1.2rem;
+            text-align: right;
+        }
+
+        /* Resumen y totales */
+        .summary-section-mobile {
+            background: linear-gradient(135deg, #243B55, #141E30);
+            margin: 16px;
+            padding: 20px;
+            border-radius: 24px;
+            color: white;
+        }
+
+        .summary-row-mobile {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .total-mobile {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: right;
+            margin: 16px 0;
+        }
+
+        .action-buttons-mobile {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .mobile-action-btn {
+            background: rgba(255,255,255,0.15);
+            border: 1.5px solid rgba(255,255,255,0.3);
+            padding: 16px;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .mobile-action-btn:active {
+            background: rgba(255,255,255,0.25);
+        }
+
+        /* Descuentos */
+        .discount-section-mobile {
+            background: rgba(255,255,255,0.1);
+            padding: 16px;
+            border-radius: 16px;
+            margin: 16px;
+        }
+
+        .discount-input-mobile {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .discount-input-mobile input,
+        .discount-input-mobile select {
+            flex: 1;
+            padding: 12px;
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .discount-input-mobile select option {
+            background: #243B55;
+        }
+
+        .apply-btn-mobile {
+            background: #ffd700;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Modal de confirmación */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+
+        .modal-btn.confirm {
+            background: #dc2626;
+            color: white;
+        }
+
+        .modal-btn.cancel {
+            background: #e5e7eb;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- Header -->
+        <div class="app-header">
+            <div class="app-title">🏗️ ProPresupuesto</div>
+            <div class="app-subtitle">Mano de obra + Materiales | IVA 21%</div>
+        </div>
+
+        <!-- Stats rápidas -->
+        <div class="stats-row">
+            <div class="stat-card-mobile">
+                <div class="stat-value-mobile" id="mobileItemCount">0</div>
+                <div class="stat-label-mobile">Items</div>
+            </div>
+            <div class="stat-card-mobile">
+                <div class="stat-value-mobile" id="mobileLaborCount">0</div>
+                <div class="stat-label-mobile">Mano obra</div>
+            </div>
+            <div class="stat-card-mobile">
+                <div class="stat-value-mobile" id="mobileMaterialCount">0</div>
+                <div class="stat-label-mobile">Materiales</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="mobile-tabs">
+            <button class="mobile-tab labor active" onclick="mobileSwitchTab('labor')">
+                <span>🔨</span> Mano Obra
+            </button>
+            <button class="mobile-tab material" onclick="mobileSwitchTab('material')">
+                <span>📦</span> Materiales
+            </button>
+        </div>
+
+        <!-- Formulario Mano de Obra -->
+        <div id="mobileLaborForm" class="form-section" style="display: block;">
+            <div class="form-title">🔨 Agregar mano de obra</div>
+            <div class="mobile-form-group">
+                <label>Categoría</label>
+                <select id="mobileJobCategory">
+                    <option value="electricidad">⚡ Electricidad</option>
+                    <option value="pintura_interior">🎨 Pintura interior</option>
+                    <option value="pintura_exterior">🎨 Pintura exterior</option>
+                    <option value="drywall_muros">🧱 Drywall - Muros</option>
+                    <option value="drywall_cielorraso">🧱 Drywall - Cielorrasos</option>
+                    <option value="albanileria">🏗️ Albañilería</option>
+                    <option value="carpinteria">🔨 Carpintería</option>
+                    <option value="plomeria">🚰 Plomería</option>
+                    <option value="ceramica">🏺 Cerámicos</option>
+                    <option value="otro">🔧 Otro</option>
+                </select>
+            </div>
+            <div class="mobile-form-group">
+                <label>Descripción</label>
+                <input type="text" id="mobileJobDescription" placeholder="Ej: Instalación eléctrica completa">
+            </div>
+            <div class="mobile-form-group">
+                <label>Unidad</label>
+                <select id="mobileJobUnit">
+                    <option value="hora">⏱️ Por hora</option>
+                    <option value="dia">📅 Por día</option>
+                    <option value="m2">📐 Por m²</option>
+                    <option value="ml">📏 Por metro</option>
+                    <option value="unidad">🔢 Por unidad</option>
+                </select>
+            </div>
+            <div class="mobile-form-group">
+                <label>Cantidad</label>
+                <input type="number" id="mobileJobQuantity" min="0.5" step="0.5" value="1">
+            </div>
+            <div class="mobile-form-group">
+                <label>Precio por unidad ($)</label>
+                <input type="number" id="mobileJobPrice" min="0" step="100" value="0">
+            </div>
+            <button class="mobile-add-btn labor" onclick="mobileAddLabor()">➕ Agregar</button>
+        </div>
+
+        <!-- Formulario Materiales -->
+        <div id="mobileMaterialForm" class="form-section" style="display: none;">
+            <div class="form-title">📦 Agregar material</div>
+            <div class="mobile-form-group">
+                <label>Categoría</label>
+                <select id="mobileMaterialCategory">
+                    <option value="electrico">⚡ Material eléctrico</option>
+                    <option value="pintura">🎨 Pinturas</option>
+                    <option value="drywall_placas">🧱 Placas de yeso</option>
+                    <option value="drywall_perfiles">📏 Perfiles</option>
+                    <option value="ferreteria">🔩 Ferretería</option>
+                    <option value="ceramicos">🏺 Cerámicos</option>
+                    <option value="maderas">🪵 Maderas</option>
+                    <option value="herramientas">🔨 Herramientas</option>
+                </select>
+            </div>
+            <div class="mobile-form-group">
+                <label>Descripción</label>
+                <input type="text" id="mobileMaterialDescription" placeholder="Ej: Cable 2.5mm x 100m">
+            </div>
+            <div class="mobile-form-group">
+                <label>Unidad</label>
+                <select id="mobileMaterialUnit">
+                    <option value="unidad">🔢 Por unidad</option>
+                    <option value="m2">📐 Metro cuadrado</option>
+                    <option value="ml">📏 Metro lineal</option>
+                    <option value="kg">⚖️ Kilogramo</option>
+                    <option value="litro">🧴 Litro</option>
+                </select>
+            </div>
+            <div class="mobile-form-group">
+                <label>Cantidad</label>
+                <input type="number" id="mobileMaterialQuantity" min="0.5" step="0.5" value="1">
+            </div>
+            <div class="mobile-form-group">
+                <label>Precio unitario ($)</label>
+                <input type="number" id="mobileMaterialPrice" min="0" step="100" value="0">
+            </div>
+            <button class="mobile-add-btn material" onclick="mobileAddMaterial()">➕ Agregar</button>
+        </div>
+
+        <!-- Lista de items -->
+        <div class="items-section">
+            <div class="items-header">
+                <span class="items-title">📋 Items agregados</span>
+                <button class="clear-btn" onclick="showClearModal()">Limpiar todo</button>
+            </div>
+            <div id="mobileItemsList">
+                <!-- Items dinámicos -->
+            </div>
+        </div>
+
+        <!-- Sección de descuentos -->
+        <div class="discount-section-mobile">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                <span>🏷️</span> <span style="font-weight: 600;">Descuento</span>
+            </div>
+            <div class="discount-input-mobile">
+                <input type="number" id="mobileDiscountValue" placeholder="Valor" min="0" value="0">
+                <select id="mobileDiscountType">
+                    <option value="percentage">%</option>
+                    <option value="fixed">$</option>
+                </select>
+                <button class="apply-btn-mobile" onclick="mobileApplyDiscount()">Aplicar</button>
+            </div>
+            <div style="font-size: 0.85rem; margin-top: 8px; opacity: 0.9;" id="mobileCurrentDiscount">
+                Descuento: $0 (0%)
+            </div>
+        </div>
+
+        <!-- Resumen y totales -->
+        <div class="summary-section-mobile">
+            <div class="summary-row-mobile">
+                <span>🔨 Mano de obra:</span>
+                <span id="mobileLaborSubtotal">$0</span>
+            </div>
+            <div class="summary-row-mobile">
+                <span>📦 Materiales:</span>
+                <span id="mobileMaterialSubtotal">$0</span>
+            </div>
+            <div class="summary-row-mobile">
+                <span>Subtotal:</span>
+                <span id="mobileGeneralSubtotal">$0</span>
+            </div>
+            <div class="summary-row-mobile">
+                <span>Descuento:</span>
+                <span id="mobileDiscountAmount">-$0</span>
+            </div>
+            <div class="summary-row-mobile">
+                <span>IVA (21%):</span>
+                <span id="mobileIva">$0</span>
+            </div>
+            <div class="total-mobile" id="mobileTotal">$0</div>
+
+            <!-- Botones de acción -->
+            <div class="action-buttons-mobile">
+                <button class="mobile-action-btn" onclick="mobileExportBudget()">
+                    <span>📄</span> Exportar
+                </button>
+                <button class="mobile-action-btn" onclick="mobileNewBudget()">
+                    <span>🆕</span> Nuevo
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal de confirmación -->
+        <div id="clearModal" class="modal-overlay">
+            <div class="modal-content">
+                <h3 style="margin-bottom: 16px;">¿Limpiar todo?</h3>
+                <p style="color: #666; margin-bottom: 20px;">Se eliminarán todos los items del presupuesto.</p>
+                <div class="modal-buttons">
+                    <button class="modal-btn cancel" onclick="hideClearModal()">Cancelar</button>
+                    <button class="modal-btn confirm" onclick="mobileClearAll()">Limpiar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let items = [];
+        let discount = { type: 'percentage', value: 0 };
+
+        // Funciones de la UI móvil
+        function mobileSwitchTab(tab) {
+            const laborForm = document.getElementById('mobileLaborForm');
+            const materialForm = document.getElementById('mobileMaterialForm');
+            const laborTab = document.querySelector('.mobile-tab.labor');
+            const materialTab = document.querySelector('.mobile-tab.material');
+            
+            if (tab === 'labor') {
+                laborForm.style.display = 'block';
+                materialForm.style.display = 'none';
+                laborTab.classList.add('active');
+                materialTab.classList.remove('active');
+            } else {
+                laborForm.style.display = 'none';
+                materialForm.style.display = 'block';
+                laborTab.classList.remove('active');
+                materialTab.classList.add('active');
+            }
+        }
+
+        function mobileAddLabor() {
+            const category = document.getElementById('mobileJobCategory').value;
+            const description = document.getElementById('mobileJobDescription').value;
+            const unit = document.getElementById('mobileJobUnit').value;
+            const quantity = parseFloat(document.getElementById('mobileJobQuantity').value);
+            const price = parseFloat(document.getElementById('mobileJobPrice').value);
+
+            if (!description) {
+                alert('Por favor, ingresa una descripción');
+                return;
+            }
+
+            if (quantity <= 0 || price <= 0) {
+                alert('La cantidad y precio deben ser mayores a 0');
+                return;
+            }
+
+            const categoryNames = {
+                'electricidad': '⚡ Electricidad',
+                'pintura_interior': '🎨 Pintura interior',
+                'pintura_exterior': '🎨 Pintura exterior',
+                'drywall_muros': '🧱 Drywall muros',
+                'drywall_cielorraso': '🧱 Drywall cielorraso',
+                'albanileria': '🏗️ Albañilería',
+                'carpinteria': '🔨 Carpintería',
+                'plomeria': '🚰 Plomería',
+                'ceramica': '🏺 Cerámicos',
+                'otro': '🔧 Otro'
+            };
+
+            const item = {
+                id: Date.now() + Math.random(),
+                category: 'labor',
+                typeName: categoryNames[category] || category,
+                description: description,
+                unit: unit,
+                quantity: quantity,
+                price: price,
+                total: quantity * price
+            };
+
+            items.push(item);
+            mobileUpdateAll();
+            
+            // Limpiar inputs
+            document.getElementById('mobileJobDescription').value = '';
+            document.getElementById('mobileJobQuantity').value = '1';
+            document.getElementById('mobileJobPrice').value = '0';
+        }
+
+        function mobileAddMaterial() {
+            const category = document.getElementById('mobileMaterialCategory').value;
+            const description = document.getElementById('mobileMaterialDescription').value;
+            const unit = document.getElementById('mobileMaterialUnit').value;
+            const quantity = parseFloat(document.getElementById('mobileMaterialQuantity').value);
+            const price = parseFloat(document.getElementById('mobileMaterialPrice').value);
+
+            if (!description) {
+                alert('Por favor, ingresa una descripción');
+                return;
+            }
+
+            if (quantity <= 0 || price <= 0) {
+                alert('La cantidad y precio deben ser mayores a 0');
+                return;
+            }
+
+            const categoryNames = {
+                'electrico': '⚡ Material eléctrico',
+                'pintura': '🎨 Pinturas',
+                'drywall_placas': '🧱 Placas yeso',
+                'drywall_perfiles': '📏 Perfiles',
+                'ferreteria': '🔩 Ferretería',
+                'ceramicos': '🏺 Cerámicos',
+                'maderas': '🪵 Maderas',
+                'herramientas': '🔨 Herramientas'
+            };
+
+            const item = {
+                id: Date.now() + Math.random(),
+                category: 'material',
+                typeName: categoryNames[category] || category,
+                description: description,
+                unit: unit,
+                quantity: quantity,
+                price: price,
+                total: quantity * price
+            };
+
+            items.push(item);
+            mobileUpdateAll();
+            
+            // Limpiar inputs
+            document.getElementById('mobileMaterialDescription').value = '';
+            document.getElementById('mobileMaterialQuantity').value = '1';
+            document.getElementById('mobileMaterialPrice').value = '0';
+        }
+
+        function mobileUpdateItemsList() {
+            const list = document.getElementById('mobileItemsList');
+            
+            if (items.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No hay items agregados</p>';
+                return;
+            }
+
+            list.innerHTML = '';
+            items.forEach(item => {
+                const itemCard = document.createElement('div');
+                itemCard.className = `mobile-item-card ${item.category}`;
+                
+                const unitNames = {
+                    'hora': 'hs', 'dia': 'días', 'm2': 'm²', 'ml': 'm', 
+                    'unidad': 'ud', 'kg': 'kg', 'litro': 'l'
+                };
+
+                itemCard.innerHTML = `
+                    <div class="mobile-item-header">
+                        <span class="mobile-item-category ${item.category === 'labor' ? 'category-labor' : 'category-material'}">
+                            ${item.category === 'labor' ? '🔨 Mano obra' : '📦 Material'}
+                        </span>
+                        <button class="mobile-item-delete" onclick="mobileDeleteItem(${item.id})">×</button>
+                    </div>
+                    <div class="mobile-item-description">${item.typeName} - ${item.description}</div>
+                    <div class="mobile-item-details">
+                        <span>📊 ${item.quantity} ${unitNames[item.unit] || item.unit}</span>
+                        <span>💰 $${formatNumber(item.price)}</span>
+                    </div>
+                    <div class="mobile-item-price">$${formatNumber(item.total)}</div>
+                `;
+                
+                list.appendChild(itemCard);
+            });
+        }
+
+        function mobileDeleteItem(id) {
+            items = items.filter(item => item.id !== id);
+            mobileUpdateAll();
+        }
+
+        function mobileUpdateAll() {
+            // Actualizar lista
+            mobileUpdateItemsList();
+            
+            // Calcular subtotales
+            const laborItems = items.filter(item => item.category === 'labor');
+            const materialItems = items.filter(item => item.category === 'material');
+            
+            const laborSubtotal = laborItems.reduce((sum, item) => sum + item.total, 0);
+            const materialSubtotal = materialItems.reduce((sum, item) => sum + item.total, 0);
+            const generalSubtotal = laborSubtotal + materialSubtotal;
+            
+            // Descuento
+            let discountAmount = 0;
+            if (discount.type === 'percentage') {
+                discountAmount = generalSubtotal * (discount.value / 100);
+            } else {
+                discountAmount = Math.min(discount.value, generalSubtotal);
+            }
+            
+            const subtotalWithDiscount = generalSubtotal - discountAmount;
+            const iva = subtotalWithDiscount * 0.21;
+            const total = subtotalWithDiscount + iva;
+
+            // Actualizar stats
+            document.getElementById('mobileItemCount').textContent = items.length;
+            document.getElementById('mobileLaborCount').textContent = laborItems.length;
+            document.getElementById('mobileMaterialCount').textContent = materialItems.length;
+            
+            // Actualizar totales
+            document.getElementById('mobileLaborSubtotal').textContent = '$' + formatNumber(laborSubtotal);
+            document.getElementById('mobileMaterialSubtotal').textContent = '$' + formatNumber(materialSubtotal);
+            document.getElementById('mobileGeneralSubtotal').textContent = '$' + formatNumber(generalSubtotal);
+            document.getElementById('mobileDiscountAmount').textContent = '-$' + formatNumber(discountAmount);
+            document.getElementById('mobileIva').textContent = '$' + formatNumber(iva);
+            document.getElementById('mobileTotal').textContent = '$' + formatNumber(total);
+            
+            // Actualizar descuento mostrado
+            document.getElementById('mobileCurrentDiscount').innerHTML = 
+                `Descuento: $${formatNumber(discountAmount)} (${discount.type === 'percentage' ? discount.value + '%' : '$' + discount.value})`;
+        }
+
+        function mobileApplyDiscount() {
+            const value = parseFloat(document.getElementById('mobileDiscountValue').value) || 0;
+            const type = document.getElementById('mobileDiscountType').value;
+            
+            if (value < 0) {
+                alert('El descuento no puede ser negativo');
+                return;
+            }
+
+            discount = { type, value };
+            mobileUpdateAll();
+        }
+
+        function showClearModal() {
+            document.getElementById('clearModal').style.display = 'flex';
+        }
+
+        function hideClearModal() {
+            document.getElementById('clearModal').style.display = 'none';
+        }
+
+        function mobileClearAll() {
+            items = [];
+            discount = { type: 'percentage', value: 0 };
+            document.getElementById('mobileDiscountValue').value = '0';
+            mobileUpdateAll();
+            hideClearModal();
+        }
+
+        function mobileNewBudget() {
+            if (items.length > 0 && confirm('¿Empezar nuevo presupuesto?')) {
+                mobileClearAll();
+            }
+        }
+
+        function mobileExportBudget() {
+            if (items.length === 0) {
+                alert('Agrega items al presupuesto');
+                return;
+            }
+
+            const laborItems = items.filter(item => item.category === 'labor');
+            const materialItems = items.filter(item => item.category === 'material');
+            
+            const laborSubtotal = laborItems.reduce((sum, item) => sum + item.total, 0);
+            const materialSubtotal = materialItems.reduce((sum, item) => sum + item.total, 0);
+            const generalSubtotal = laborSubtotal + materialSubtotal;
+            
+            let discountAmount = 0;
+            if (discount.type === 'percentage') {
+                discountAmount = generalSubtotal * (discount.value / 100);
+            } else {
+                discountAmount = Math.min(discount.value, generalSubtotal);
+            }
+            
+            const subtotalWithDiscount = generalSubtotal - discountAmount;
+            const iva = subtotalWithDiscount * 0.21;
+            const total = subtotalWithDiscount + iva;
+
+            let text = "PRESUPUESTO DE OBRA\n";
+            text += "===================\n";
+            text += `Fecha: ${new Date().toLocaleDateString()}\n\n`;
+            
+            if (laborItems.length > 0) {
+                text += "🔨 MANO DE OBRA:\n";
+                laborItems.forEach((item, i) => {
+                    text += `${i+1}. ${item.typeName}: ${item.description}\n`;
+                    text += `   ${item.quantity} x $${formatNumber(item.price)} = $${formatNumber(item.total)}\n`;
+                });
+                text += "\n";
+            }
+            
+            if (materialItems.length > 0) {
+                text += "📦 MATERIALES:\n";
+                materialItems.forEach((item, i) => {
+                    text += `${i+1}. ${item.typeName}: ${item.description}\n`;
+                    text += `   ${item.quantity} x $${formatNumber(item.price)} = $${formatNumber(item.total)}\n`;
+                });
+                text += "\n";
+            }
+            
+            text += "===================\n";
+            text += `Subtotal: $${formatNumber(generalSubtotal)}\n`;
+            text += `Descuento: -$${formatNumber(discountAmount)}\n`;
+            text += `Subtotal c/desc: $${formatNumber(subtotalWithDiscount)}\n`;
+            text += `IVA 21%: $${formatNumber(iva)}\n`;
+            text += `TOTAL: $${formatNumber(total)}\n`;
+
+            // Compartir o guardar
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Presupuesto de obra',
+                    text: text,
+                });
+            } else {
+                const blob = new Blob([text], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `presupuesto_${new Date().toISOString().split('T')[0]}.txt`;
+                a.click();
+            }
+        }
+
+        function formatNumber(num) {
+            return num.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        }
+
+        // Inicializar
+        mobileUpdateAll();
+    </script>
+</body>
+</html>
